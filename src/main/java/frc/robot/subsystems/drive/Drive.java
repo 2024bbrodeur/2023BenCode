@@ -10,7 +10,7 @@ public class Drive extends SubsystemBase {
     public Drive() {
         modules = new ModuleIO[4];
         for(int i = 0; i < modules.length; i++) {
-            modules[i] = new ModuleIO(i);
+            modules[i] = new ModuleIOTalonFX(i);
         }
 
         gyro = new GyroIO();

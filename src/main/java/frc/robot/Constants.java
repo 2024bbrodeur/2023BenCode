@@ -1,5 +1,8 @@
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
+import frc.robot.lib.math.NRUnits;
+
 public final class Constants {
     
     public static final double TAU = Math.PI * 2;
@@ -49,6 +52,8 @@ public final class Constants {
         public static final double MOVE_GEAR_RATIO = 8.14;
         public static final double TURN_GEAR_RATIO = 150. / 7;
 
+        public static final double WHEEL_RADIUS = Units.inchesToMeters(1.925);
+
         public static final double MOVE_KV = 0.01;
         public static final double MOVE_KS = 0.0;
         public static final double MOVE_KP = 0.01;
@@ -61,7 +66,8 @@ public final class Constants {
         public static final double TURN_KI = 0.0;
         public static final double TURN_KD = 0.0;
 
-        public static final double MAX_MOVE_VELOCITY = 103;
+        public static final double MAX_MOVE_VELOCITY_NU = 103;
+        public static final double MAX_MOVE_VELOCITY_MPS = NRUnits.Drive.Move.NUToMeters(MAX_MOVE_VELOCITY_NU);
 
         public static final double TURN_CRUISE_VELOCITY = 103;
         public static final double TURN_ACCELERATION = 180;
