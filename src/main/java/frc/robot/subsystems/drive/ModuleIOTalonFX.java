@@ -79,7 +79,9 @@ public class ModuleIOTalonFX implements ModuleIO {
         moveControl.UpdateFreqHz = 50;
 
         turnControl = new MotionMagicDutyCycle(0);
+        turnControl.EnableFOC = false;
         turnControl.UpdateFreqHz = 50;
+        turnControl.OverrideBrakeDurNeutral = false;
 
         config();
     }
@@ -96,7 +98,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         moveConfig.Feedback.SensorToMechanismRatio = Constants.Drive.MOVE_GEAR_RATIO;
         moveConfig.FutureProofConfigs = true;
         moveConfig.MotorOutput.DutyCycleNeutralDeadband = 0;
-        moveConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        moveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         moveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         moveConfig.Slot0.kV = Constants.Drive.MOVE_KV;
         moveConfig.Slot0.kS = Constants.Drive.MOVE_KS;
@@ -111,9 +113,9 @@ public class ModuleIOTalonFX implements ModuleIO {
         turnConfig.ClosedLoopGeneral.ContinuousWrap = true;
         turnConfig.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = 0;
         turnConfig.CurrentLimits.StatorCurrentLimit = Constants.Drive.TURN_STATOR_CURRENT;
-        turnConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        turnConfig.CurrentLimits.StatorCurrentLimitEnable = false;
         turnConfig.CurrentLimits.SupplyCurrentLimit = Constants.Drive.TURN_SUPPLY_CURRENT;
-        turnConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        turnConfig.CurrentLimits.SupplyCurrentLimitEnable = false;
         turnConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
         turnConfig.Feedback.SensorToMechanismRatio = Constants.Drive.TURN_GEAR_RATIO;
         turnConfig.FutureProofConfigs = true;
@@ -130,7 +132,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         turnConfig.MotionMagic.MotionMagicJerk = Constants.Drive.TURN_JERK;
         turnMotor.clearStickyFaults();
         turnMotor.setRotorPosition(0);
-        turnConfigurator.apply(moveConfig);
+        turnConfigurator.apply(turnConfig);
 
         turnSensorConfig.FutureProofConfigs = true;
         turnSensorConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
@@ -166,7 +168,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         inputs.moveStatorCurrent = moveMotor.getStatorCurrent().getValue();
         inputs.moveSupplyCurrent = moveMotor.getSupplyCurrent().getValue();
 
-        inputs.turnPositionRotor = NRUnits.Drive.Turn.NUToRad(turnMotor.getRotorPosition().getValue());
+        inputs.turnPositionRotor = NRUnits.constrainRad(Constants.TAU/2+NRUnits.Drive.Turn.NUToRad(turnMotor.getRotorPosition().getValue()));
         inputs.turnPositionEncoder = turnSensor.getAbsolutePosition().getValue() * Constants.TAU;
         inputs.turnVelocity = NRUnits.Drive.Turn.NUToRad(turnMotor.getRotorVelocity().getValue());
         inputs.moveStatorCurrent = turnMotor.getStatorCurrent().getValue();

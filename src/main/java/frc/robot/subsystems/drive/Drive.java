@@ -1,21 +1,73 @@
 package frc.robot.subsystems.drive;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.lib.util.SwerveState;
 
 public class Drive extends SubsystemBase {
     
-    private ModuleIO[] modules;
+    private Module[] modules;
     private GyroIO gyro;
 
+    public boolean isFieldCentric;
+
     public Drive() {
-        modules = new ModuleIO[4];
+        modules = new Module[4];
         for(int i = 0; i < modules.length; i++) {
-            modules[i] = new ModuleIOTalonFX(i);
+            modules[i] = new Module(new ModuleIOTalonFX(i), i);
         }
 
         gyro = new GyroIO();
+
+        isFieldCentric = true;
     }
 
-    
+    /*
+     * x: [-1, 1]
+     * y: [-1, 1]
+     * omega: [-1, 1]
+     */
+    public void set(double x, double y, double omega) {
+
+        if(isFieldCentric) {
+            double angleDiff = Math.atan2(y, x) - getGyroAngle(); //difference between input angle and gyro angle gives desired field relative angle
+            double r = Math.sqrt(x*x + y*y); //magnitude of translation vector
+            x = r * Math.cos(angleDiff);
+            y = r * Math.sin(angleDiff);
+        }
+        
+        //Repeated equations
+        double a = omega * Constants.Drive.WIDTH/2;
+        double b = omega * Constants.Drive.LENGTH/2;
+
+        //The addition of the movement and rotational vector
+        Translation2d t0 = new Translation2d(x-b, y-a);
+        Translation2d t1 = new Translation2d(x+b, y-a);
+        Translation2d t2 = new Translation2d(x+b, y+a);
+        Translation2d t3 = new Translation2d(x-b, y+a);
+
+        //convert to polar
+        SwerveState[] setStates = new SwerveState[] {
+            SwerveState.fromTranslation2d(t0),
+            SwerveState.fromTranslation2d(t1),
+            SwerveState.fromTranslation2d(t2),
+            SwerveState.fromTranslation2d(t3)
+        };
+
+        setStates = SwerveState.normalize(setStates);
+
+        set(setStates);
+    }
+
+    public void set(SwerveState[] states) {
+        for(int i = 0; i < modules.length; i++) {
+            modules[i].set(states[i]);
+        }
+    }
+
+    public double getGyroAngle() {
+        return gyro.getAngle();
+    }
 
 }

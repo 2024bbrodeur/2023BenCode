@@ -24,6 +24,9 @@ public final class Constants {
             public static final double ROLL = -0.483398;
         }
 
+        public static final double WIDTH = Units.inchesToMeters(26 - 2.625*2);
+        public static final double LENGTH = Units.inchesToMeters(26 - 2.625*2);
+
         public static final int FRONT_RIGHT_TURN_PORT = 0;
         public static final int FRONT_LEFT_TURN_PORT = 1;
         public static final int BACK_LEFT_TURN_PORT = 2;
@@ -60,9 +63,9 @@ public final class Constants {
         public static final double MOVE_KI = 0.0;
         public static final double MOVE_KD = 0.0;
 
-        public static final double TURN_KV = 0.01;
+        public static final double TURN_KV = 0.25;
         public static final double TURN_KS = 0.0;
-        public static final double TURN_KP = 0.5;
+        public static final double TURN_KP = 9;
         public static final double TURN_KI = 0.0;
         public static final double TURN_KD = 0.0;
 

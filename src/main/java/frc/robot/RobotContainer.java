@@ -4,8 +4,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.ModuleTestCommand;
+import frc.robot.subsystems.drive.Module;
+import frc.robot.subsystems.drive.ModuleIOTalonFX;
 
 public class RobotContainer {
   
@@ -17,6 +21,8 @@ public class RobotContainer {
   
   public RobotContainer() {
     configureBindings();
+
+    SmartDashboard.putData(new ModuleTestCommand(new Module(new ModuleIOTalonFX(0), 0)));
   }
 
   private void configureBindings() {}
