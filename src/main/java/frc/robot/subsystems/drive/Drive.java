@@ -1,5 +1,7 @@
 package frc.robot.subsystems.drive;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -9,8 +11,20 @@ public class Drive extends SubsystemBase {
     
     private Module[] modules;
     private GyroIO gyro;
+    private GyroIOInputsAutoLogged inputs = new GyroIOInputsAutoLogged();
 
     public boolean isFieldCentric;
+
+    @Override
+    public void periodic() {
+        for(Module module : modules) {
+            module.periodic();
+        }
+
+        gyro.updateInputs(inputs);
+        Logger.getInstance().processInputs("Drive/Gyro", inputs);
+
+    }
 
     public Drive() {
         modules = new Module[4];
@@ -18,7 +32,7 @@ public class Drive extends SubsystemBase {
             modules[i] = new Module(new ModuleIOTalonFX(i), i);
         }
 
-        gyro = new GyroIO();
+        gyro = new GyroIOPigeon();
 
         isFieldCentric = true;
     }
@@ -29,7 +43,6 @@ public class Drive extends SubsystemBase {
      * omega: [-1, 1]
      */
     public void set(double x, double y, double omega) {
-
         if(isFieldCentric) {
             double angleDiff = Math.atan2(y, x) - getGyroAngle(); //difference between input angle and gyro angle gives desired field relative angle
             double r = Math.sqrt(x*x + y*y); //magnitude of translation vector
@@ -67,7 +80,7 @@ public class Drive extends SubsystemBase {
     }
 
     public double getGyroAngle() {
-        return gyro.getAngle();
+        return inputs.yaw;
     }
 
 }

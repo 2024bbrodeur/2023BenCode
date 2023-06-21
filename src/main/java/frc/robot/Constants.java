@@ -9,6 +9,33 @@ public final class Constants {
 
     public static final class Arm {
 
+        public static final int EXTEND_PORT = 10;
+        public static final int PIVOT1_PORT = 13;
+        public static final int PIVOT2_PORT = 15;
+        public static final int ENCODER_PORT = 4;
+
+        public static final double EXTEND_CRUISE_VELOCITY = 0;
+        public static final double EXTEND_ACCELERATION = 0;
+        public static final double EXTEND_JERK = 0;
+
+        public static final double PIVOT_CRUISE_VELOCITY = 0;
+        public static final double PIVOT_ACCELERATION = 0;
+        public static final double PIVOT_JERK = 0;
+
+        public static final double EXTEND_KS = 0;
+        public static final double EXTEND_KV = 0;
+        public static final double EXTEND_KP = 0;
+        public static final double EXTEND_KI = 0;
+        public static final double EXTEND_KD = 0;
+
+        public static final double PIVOT_KS = 0;
+        public static final double PIVOT_KV = 0;
+        public static final double PIVOT_KP = 0;
+        public static final double PIVOT_KI = 0;
+        public static final double PIVOT_KD = 0;
+
+        public static final double ENCODER_OFFSET = 0;
+
     }
 
     public static final class Auto {

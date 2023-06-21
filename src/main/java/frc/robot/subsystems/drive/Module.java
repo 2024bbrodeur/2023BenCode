@@ -42,20 +42,15 @@ public class Module {
      * angle: [-Tau/2, Tau/2]
      */
     public void set(double move, double angle) {
-        // if(angle != lastAngle) {
-        //     double diff = Math.abs(angle - inputs.turnPositionRotor);
-        //     SmartDashboard.putNumber("Diff", diff);
-            
-        //     if(diff < Constants.TAU/4 || diff > Constants.TAU*3/4) {
-        //         io.setTurn(angle);
-        //         mult = 1;
-        //     } else {
-        //         io.setTurn(NRUnits.constrainRad(angle + Constants.TAU/2));
-        //         mult = -1;
-        //     }
-        // }
-        // io.setMove(move * mult);
-        // lastAngle = angle;
+        angle = NRUnits.constrainRad(angle);
+        double diff = Math.abs(angle - inputs.turnPositionRotor);
+        if(diff < Constants.TAU/4 || diff > 3*Constants.TAU/4) {
+            io.setMove(move);
+            io.setTurn(angle);
+        } else {
+            io.setMove(-move);
+            io.setTurn(NRUnits.constrainRad(angle + Constants.TAU/2));
+        }
     }
 
 }
