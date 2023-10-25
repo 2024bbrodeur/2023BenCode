@@ -34,23 +34,91 @@ public class Module {
         set(state.move, state.turn);
     }
 
-    double lastAngle = 0;
-    double mult = 1;
+    public void set(double move, double turn) {
+        setDeg(move, turn * Constants.TAU/360, true);
+    }
 
-    /*
-     * move: [-1, 1]
-     * angle: [-Tau/2, Tau/2]
-     */
-    public void set(double move, double angle) {
-        angle = NRUnits.constrainRad(angle);
-        double diff = Math.abs(angle - inputs.turnPositionRotor);
-        if(diff < Constants.TAU/4 || diff > 3*Constants.TAU/4) {
-            io.setMove(move);
-            io.setTurn(angle);
-        } else {
-            io.setMove(-move);
-            io.setTurn(NRUnits.constrainRad(angle + Constants.TAU/2));
+    public void setDeg(double move, double turn, boolean optimizeTurn) {
+        if(move == 0 && optimizeTurn){
+            io.setMove(0);
+            return;
         }
+        double lastTurn = inputs.turnPositionRotor * 360/Constants.TAU;
+
+        double angle = findLowestAngle(turn, lastTurn);
+        double angleChange = findAngleChange(angle, lastTurn);
+        
+        double nextPos = NRUnits.constrainRad((lastTurn + angleChange)*Constants.TAU/360);
+
+        io.setTurn(nextPos);
+        io.setMove(move * multiplier);
+    }
+
+    private int multiplier;
+
+    public double findLowestAngle(double turn, double lastTurn){
+        double[] potAngles = potentialAngles(turn); //Gets the two potential angles we could go to
+
+        // Calculate the distance between those and the last angle the module was at
+        double originalDistance = findDistance(potAngles[0], lastTurn);
+        double oppositeDistance = findDistance(potAngles[1], lastTurn);
+
+        // If the original distance is less, we want to go there
+        if(originalDistance <= oppositeDistance){
+            // moveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+            // moveConfigurator.apply(moveConfig);
+            multiplier = -1;
+            return potAngles[0];
+        }
+        else{ //If we want to go to the opposite of the desired angle, we have to tell the motor to move "backwards"
+            // moveConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+            // moveConfigurator.apply(moveConfig);
+            multiplier = 1;
+            return potAngles[1];
+        } 
+    }
+
+    // Find the two angles we could potentially go to
+    public double[] potentialAngles(double angle){
+        //Constrain the variable to desired domain
+        angle = NRUnits.constrainDeg(angle);
+
+        //Figure out the opposite angle
+        double oppositeAngle = angle + 180;
+
+        //Constrain the opposite angle
+        oppositeAngle = NRUnits.constrainDeg(oppositeAngle);
+
+        //Put them into a size 2 array
+        double[] angles = {angle, oppositeAngle};
+
+        return angles;
+    }
+
+    public double findAngleChange(double turn, double lastTurn){
+        double distance = turn - lastTurn;
+        //double sign = Math.signum(distance);   //Either 1 or -1 -> represents positive or negative
+
+        if(Math.abs(turn - (lastTurn + 360)) < Math.abs(distance)){
+            // If this is true, it means that lastTurn is in the negatives and is trying to reach a positive, meaning that it must move positive
+            distance = turn - (lastTurn + 360);
+            //sign = +1;
+        }
+
+        if(Math.abs(turn+360 - (lastTurn)) < Math.abs(distance)){
+            // If this is true, it means that turn is in the negatives and lastTurn is trying to reach a negative, meaning that you must move negative 
+            distance = turn+360 - lastTurn;
+            //sign = -1;
+        }
+
+        return distance;
+    }
+
+    public double findDistance(double turn, double lastTurn){
+        double distance = Math.min(Math.abs(turn - lastTurn), Math.abs(turn+360 - lastTurn));
+        distance = Math.min(distance, Math.abs(turn - (lastTurn+360)));
+
+        return distance;
     }
 
 }

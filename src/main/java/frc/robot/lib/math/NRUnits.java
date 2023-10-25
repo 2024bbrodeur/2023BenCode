@@ -8,6 +8,10 @@ public class NRUnits {
         return (((rad % Constants.TAU) + Constants.TAU) % Constants.TAU) - Constants.TAU/2;
     }
 
+    public static double constrainDeg(double deg) {
+        return (((deg % 360) + 360) % 360) - 360/2;
+    }
+
     public static class Drive {
 
         public static class Turn {
