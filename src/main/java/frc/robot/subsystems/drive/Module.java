@@ -22,8 +22,6 @@ public class Module {
     public void periodic() {
         io.updateInputs(inputs);
         Logger.getInstance().processInputs("Drive/Module"+index, inputs);
-
-        SmartDashboard.putNumber("Angle", inputs.turnPositionRotor * 360/Constants.TAU);
     }
 
     public void set(SwerveModuleState state) {
@@ -35,20 +33,20 @@ public class Module {
     }
 
     public void set(double move, double turn) {
-        setDeg(move, turn * Constants.TAU/360, true);
+        set(move, turn, true);
     }
 
-    public void setDeg(double move, double turn, boolean optimizeTurn) {
+    public void set(double move, double turn, boolean optimizeTurn) {
         if(move == 0 && optimizeTurn){
             io.setMove(0);
             return;
         }
-        double lastTurn = inputs.turnPositionRotor * 360/Constants.TAU;
+        double lastTurn = inputs.turnPositionRotor;
 
         double angle = findLowestAngle(turn, lastTurn);
         double angleChange = findAngleChange(angle, lastTurn);
         
-        double nextPos = NRUnits.constrainRad((lastTurn + angleChange)*Constants.TAU/360);
+        double nextPos = NRUnits.constrainRad((lastTurn + angleChange));
 
         io.setTurn(nextPos);
         io.setMove(move * multiplier);
@@ -81,13 +79,13 @@ public class Module {
     // Find the two angles we could potentially go to
     public double[] potentialAngles(double angle){
         //Constrain the variable to desired domain
-        angle = NRUnits.constrainDeg(angle);
+        angle = NRUnits.constrainRad(angle);
 
         //Figure out the opposite angle
-        double oppositeAngle = angle + 180;
+        double oppositeAngle = angle + Constants.TAU/2;
 
         //Constrain the opposite angle
-        oppositeAngle = NRUnits.constrainDeg(oppositeAngle);
+        oppositeAngle = NRUnits.constrainRad(oppositeAngle);
 
         //Put them into a size 2 array
         double[] angles = {angle, oppositeAngle};
@@ -99,15 +97,15 @@ public class Module {
         double distance = turn - lastTurn;
         //double sign = Math.signum(distance);   //Either 1 or -1 -> represents positive or negative
 
-        if(Math.abs(turn - (lastTurn + 360)) < Math.abs(distance)){
+        if(Math.abs(turn - (lastTurn + Constants.TAU)) < Math.abs(distance)){
             // If this is true, it means that lastTurn is in the negatives and is trying to reach a positive, meaning that it must move positive
-            distance = turn - (lastTurn + 360);
+            distance = turn - (lastTurn + Constants.TAU);
             //sign = +1;
         }
 
-        if(Math.abs(turn+360 - (lastTurn)) < Math.abs(distance)){
+        if(Math.abs(turn+Constants.TAU - (lastTurn)) < Math.abs(distance)){
             // If this is true, it means that turn is in the negatives and lastTurn is trying to reach a negative, meaning that you must move negative 
-            distance = turn+360 - lastTurn;
+            distance = turn+Constants.TAU - lastTurn;
             //sign = -1;
         }
 
@@ -115,8 +113,8 @@ public class Module {
     }
 
     public double findDistance(double turn, double lastTurn){
-        double distance = Math.min(Math.abs(turn - lastTurn), Math.abs(turn+360 - lastTurn));
-        distance = Math.min(distance, Math.abs(turn - (lastTurn+360)));
+        double distance = Math.min(Math.abs(turn - lastTurn), Math.abs(turn+Constants.TAU - lastTurn));
+        distance = Math.min(distance, Math.abs(turn - (lastTurn+Constants.TAU)));
 
         return distance;
     }

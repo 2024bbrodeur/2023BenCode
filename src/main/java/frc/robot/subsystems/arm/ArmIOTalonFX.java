@@ -5,6 +5,8 @@ import com.ctre.phoenixpro.configs.CANcoderConfigurator;
 import com.ctre.phoenixpro.configs.TalonFXConfiguration;
 import com.ctre.phoenixpro.configs.TalonFXConfigurator;
 import com.ctre.phoenixpro.controls.Follower;
+import com.ctre.phoenixpro.controls.MotionMagicDutyCycle;
+import com.ctre.phoenixpro.controls.VelocityDutyCycle;
 import com.ctre.phoenixpro.hardware.CANcoder;
 import com.ctre.phoenixpro.hardware.TalonFX;
 import com.ctre.phoenixpro.signals.AbsoluteSensorRangeValue;
@@ -21,6 +23,8 @@ public class ArmIOTalonFX implements ArmIO {
     private TalonFX extend;
     private TalonFXConfiguration extendConfig;
     private TalonFXConfigurator extendConfigurator;
+    private MotionMagicDutyCycle extendPositionControl;
+    private VelocityDutyCycle extendVelocityControl;
 
     private TalonFX pivot1;
     private TalonFXConfigurator pivot1Configurator;
@@ -29,45 +33,59 @@ public class ArmIOTalonFX implements ArmIO {
     private TalonFXConfigurator pivot2Configurator;
 
     private TalonFXConfiguration pivotConfig;
+    private MotionMagicDutyCycle pivotPositionControl;
+    private VelocityDutyCycle pivotVelocityControl;
 
     private CANcoder pivotEncoder;
     private CANcoderConfiguration pivotEncoderConfig;
     private CANcoderConfigurator pivotEncoderConfigurator;
 
     public ArmIOTalonFX() {
-        extend = new TalonFX(Constants.Arm.EXTEND_PORT, "drivet");
+        extend = new TalonFX(Constants.Arm.Extend.PORT, "drivet");
         extendConfig = new TalonFXConfiguration();
         extendConfigurator = extend.getConfigurator();
+        extendPositionControl = new MotionMagicDutyCycle(0, true, 0, 0, false);
+        extendVelocityControl = new VelocityDutyCycle(0, true, 0, 0, false);
 
-        pivot1 = new TalonFX(Constants.Arm.PIVOT1_PORT, "drivet");
+        pivot1 = new TalonFX(Constants.Arm.Pivot.PORT1, "drivet");
         pivot1Configurator = pivot1.getConfigurator();
 
-        pivot2 = new TalonFX(Constants.Arm.PIVOT2_PORT, "drivet");
+        pivot2 = new TalonFX(Constants.Arm.Pivot.PORT2, "drivet");
         pivot2Configurator = pivot2.getConfigurator();
 
         pivotConfig = new TalonFXConfiguration();
+        pivotPositionControl = new MotionMagicDutyCycle(0, true, 0, 0, false);
+        pivotVelocityControl = new VelocityDutyCycle(0, true, 0, 0, false);
 
-        pivotEncoder = new CANcoder(Constants.Arm.ENCODER_PORT, "drivet");
+        pivotEncoder = new CANcoder(Constants.Arm.Pivot.ENCODER_PORT, "drivet");
         pivotEncoderConfig = new CANcoderConfiguration();
         pivotEncoderConfigurator = pivotEncoder.getConfigurator();
 
         config();
     }
 
+    // position: m
     public void setExtendPosition(double position) {
-
+        extendPositionControl.Position = position * Constants.Arm.Extend.NU_PER_METERS;
+        extend.setControl(extendPositionControl);
     }
 
+    // velocity: m/s
     public void setExtendVelocity(double velocity) {
-
+        extendVelocityControl.Velocity = velocity * Constants.Arm.Extend.NU_PER_METERS;
+        extend.setControl(extendVelocityControl);
     }
 
+    // angle: rad
     public void setPivotPosition(double angle) {
-
+        pivotPositionControl.Position = angle * Constants.Arm.Pivot.NU_PER_RADIAN;
+        pivot1.setControl(pivotPositionControl);
     }
 
+    // velocity: rad/s
     public void setPivotVelocity(double velocity) {
-
+        pivotVelocityControl.Velocity = velocity * Constants.Arm.Pivot.NU_PER_RADIAN;
+        pivot1.setControl(pivotVelocityControl);
     }
 
     private void config() {
@@ -77,16 +95,16 @@ public class ArmIOTalonFX implements ArmIO {
         extendConfig.CurrentLimits.SupplyCurrentLimitEnable = false;
         extendConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
         extendConfig.FutureProofConfigs = true;
-        extendConfig.MotionMagic.MotionMagicCruiseVelocity = Constants.Arm.EXTEND_CRUISE_VELOCITY;
-        extendConfig.MotionMagic.MotionMagicAcceleration = Constants.Arm.EXTEND_ACCELERATION;
-        extendConfig.MotionMagic.MotionMagicJerk = Constants.Arm.EXTEND_JERK;
+        extendConfig.MotionMagic.MotionMagicCruiseVelocity = Constants.Arm.Extend.CRUISE_VELOCITY;
+        extendConfig.MotionMagic.MotionMagicAcceleration = Constants.Arm.Extend.ACCELERATION;
+        extendConfig.MotionMagic.MotionMagicJerk = Constants.Arm.Extend.JERK;
         extendConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         extendConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        extendConfig.Slot0.kS = Constants.Arm.EXTEND_KS;
-        extendConfig.Slot0.kV = Constants.Arm.EXTEND_KV;
-        extendConfig.Slot0.kP = Constants.Arm.EXTEND_KP;
-        extendConfig.Slot0.kI = Constants.Arm.EXTEND_KI;
-        extendConfig.Slot0.kD = Constants.Arm.EXTEND_KD;
+        extendConfig.Slot0.kS = Constants.Arm.Extend.KS;
+        extendConfig.Slot0.kV = Constants.Arm.Extend.KV;
+        extendConfig.Slot0.kP = Constants.Arm.Extend.KP;
+        extendConfig.Slot0.kI = Constants.Arm.Extend.KI;
+        extendConfig.Slot0.kD = Constants.Arm.Extend.KD;
         extendConfig.Voltage.PeakForwardVoltage = 12;
         extendConfig.Voltage.PeakReverseVoltage = 12;
         extendConfigurator.apply(extendConfig);
@@ -98,26 +116,26 @@ public class ArmIOTalonFX implements ArmIO {
         pivotConfig.CurrentLimits.SupplyCurrentLimitEnable = false;
         pivotConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
         pivotConfig.FutureProofConfigs = true;
-        pivotConfig.MotionMagic.MotionMagicCruiseVelocity = Constants.Arm.PIVOT_CRUISE_VELOCITY;
-        pivotConfig.MotionMagic.MotionMagicAcceleration = Constants.Arm.PIVOT_ACCELERATION;
-        pivotConfig.MotionMagic.MotionMagicJerk = Constants.Arm.PIVOT_JERK;
+        pivotConfig.MotionMagic.MotionMagicCruiseVelocity = Constants.Arm.Pivot.CRUISE_VELOCITY;
+        pivotConfig.MotionMagic.MotionMagicAcceleration = Constants.Arm.Pivot.ACCELERATION;
+        pivotConfig.MotionMagic.MotionMagicJerk = Constants.Arm.Pivot.JERK;
         pivotConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         pivotConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        pivotConfig.Slot0.kS = Constants.Arm.PIVOT_KS;
-        pivotConfig.Slot0.kV = Constants.Arm.PIVOT_KV;
-        pivotConfig.Slot0.kP = Constants.Arm.PIVOT_KP;
-        pivotConfig.Slot0.kI = Constants.Arm.PIVOT_KI;
-        pivotConfig.Slot0.kD = Constants.Arm.PIVOT_KD;
+        pivotConfig.Slot0.kS = Constants.Arm.Pivot.KS;
+        pivotConfig.Slot0.kV = Constants.Arm.Pivot.KV;
+        pivotConfig.Slot0.kP = Constants.Arm.Pivot.KP;
+        pivotConfig.Slot0.kI = Constants.Arm.Pivot.KI;
+        pivotConfig.Slot0.kD = Constants.Arm.Pivot.KD;
         pivotConfig.Voltage.PeakForwardVoltage = 12;
         pivotConfig.Voltage.PeakReverseVoltage = 12;
         pivot1Configurator.apply(pivotConfig);
         pivot2Configurator.apply(pivotConfig);
-        Follower pivotFollower = new Follower(Constants.Arm.PIVOT1_PORT, true);
+        Follower pivotFollower = new Follower(Constants.Arm.Pivot.PORT1, true);
         pivot2.setControl(pivotFollower);
 
         pivotEncoderConfig.FutureProofConfigs = true;
         pivotEncoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
-        pivotEncoderConfig.MagnetSensor.MagnetOffset = Constants.Arm.ENCODER_OFFSET;
+        pivotEncoderConfig.MagnetSensor.MagnetOffset = Constants.Arm.Pivot.ENCODER_OFFSET;
         pivotEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
         pivotEncoderConfigurator.apply(pivotEncoderConfig);
     }

@@ -70,6 +70,10 @@ public class Drive extends SubsystemBase {
 
         setStates = SwerveState.normalize(setStates);
 
+        // for(int i = 0; i < 4; i++) {
+        //     Logger.getInstance().processInputs("Drive/SetSwerveStates", setStates);
+        // }
+
         set(setStates);
     }
 
@@ -81,6 +85,13 @@ public class Drive extends SubsystemBase {
 
     public double getGyroAngle() {
         return inputs.yaw;
+    }
+
+    public static Drive instance;
+
+    public static Drive getInstance() {
+        if(instance == null) instance = new Drive();
+        return instance;
     }
 
 }

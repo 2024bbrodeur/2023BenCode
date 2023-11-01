@@ -17,8 +17,6 @@ public class RobotContainer {
   private final CommandJoystick rightJoystick = new CommandJoystick(Constants.Joysticks.RIGHT_JOYSTICK_PORT);
   private final CommandXboxController controller = new CommandXboxController(Constants.Joysticks.CONTROLLER_PORT);
   
-  
-  
   public RobotContainer() {
     configureBindings();
 
